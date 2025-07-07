@@ -1,0 +1,14 @@
+# Set the default handler.
+DirectoryIndex index.php
+
+# Various rewrite rules.
+<IfModule mod_rewrite.c>
+  RewriteEngine on
+
+  # Ignorar la redirección para archivos o directorios existentes
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+
+  # Enrutar todas las solicitudes a través de index.php
+  RewriteRule ^(.*)$ index.php?/$1 [L,QSA]
+</IfModule>

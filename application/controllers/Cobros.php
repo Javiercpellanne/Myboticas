@@ -1,0 +1,481 @@
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
+class Cobros extends CI_Controller
+{
+  public function __construct()
+  {
+    parent::__construct();
+    if (!$this->session->userdata("login")){redirect(base_url()."login");}
+    if (!$this->acciones(8)){redirect(base_url()."inicio");}
+
+    $this->layout->setLayout("principal");
+    $this->load->model("tpago_model");
+    $this->load->model("cliente_model");
+    $this->load->model("nventa_model");
+    $this->load->model("venta_model");
+    $this->load->model("cobro_model");
+    $this->load->model("cobroe_model");
+    $this->load->library("mytcpdf");
+  }
+
+  public function index()
+  {
+    $controlip=$this->controlip('cobros');
+    $anexos=explode(",",$this->session->userdata("establecimientos"));
+    $nestablecimiento=$this->establecimiento_model->mostrar($this->session->userdata("predeterminado"));
+    $empresa=$this->empresa_model->mostrar();
+
+    $inicio=$this->input->post('inicio',true)!=null ? $this->input->post('inicio',true) : SumarFecha('-7 day',date('Y-m-d')) ;
+    $fin=$this->input->post('fin',true)!=null ? $this->input->post('fin',true) : date('Y-m-d') ;
+
+    $filtros=array("idestablecimiento"=>$this->session->userdata("predeterminado"),"femision>="=>$inicio,"femision<="=>$fin,"nulo"=>0);
+    if ($this->session->userdata("tipo")!='admin') {$filtros['iduser']=$this->session->userdata("id");}
+    $listas=$this->cobro_model->mostrarTotal($filtros);
+    $listasc=$this->cobroe_model->mostrarTotal($filtros);
+    $this->layout->setTitle("Cobros");
+    $this->layout->view("index",compact("anexos","nestablecimiento",'empresa',"listas","listasc","inicio","fin"));
+  }
+
+  public function cobrar()
+  {
+    $controlip=$this->controlip('cobrar');
+    $anexos=explode(",",$this->session->userdata("establecimientos"));
+    $nestablecimiento=$this->establecimiento_model->mostrar($this->session->userdata("predeterminado"));
+    $empresa=$this->empresa_model->mostrar();
+
+    $filtros=array("idestablecimiento"=>$this->session->userdata("predeterminado"),"nulo"=>0,"cancelado"=>0);
+    if ($this->session->userdata("tipo")!='admin') {$filtros['iduser']=$this->session->userdata("id");}
+    $listas=$this->nventa_model->mostrarTotal($filtros,"desc");
+    $listasc=$this->venta_model->mostrarTotal($filtros,"desc");
+    $this->layout->setTitle("Cuenta por cobrar");
+    $this->layout->view("cobrar",compact("anexos","nestablecimiento",'empresa',"listas","listasc"));
+  }
+
+  public function opciones($tipo,$id)
+  {
+    $this->layout->setLayout("blanco");
+    $this->layout->view("opciones",compact("tipo","id"));
+  }
+
+  public function pdfa4($tipo,$id)
+  {
+    $nestablecimiento=$this->establecimiento_model->mostrar($this->session->userdata("predeterminado"));
+    $empresa=$this->empresa_model->mostrar();
+    if ($tipo=='N') {
+      $datos=$this->cobro_model->mostrar($id);
+      $ventas=$this->nventa_model->mostrar($datos->idnventa);
+      $cobros=$this->cobro_model->montoTotal(array("nulo"=>0,"idnventa"=>$datos->idnventa));
+    } else {
+      $datos=$this->cobroe_model->mostrar($id);
+      $ventas=$this->venta_model->mostrar($datos->idventa);
+      $cobros=$this->cobroe_model->montoTotal(array("nulo"=>0,"idventa"=>$datos->idventa));
+    }
+    $this->layout->setLayout("blanco");
+    $this->layout->view("pdfa4",compact("empresa","nestablecimiento","datos","ventas","cobros"));
+  }
+
+  public function pdf80($tipo,$id)
+  {
+    $nestablecimiento=$this->establecimiento_model->mostrar($this->session->userdata("predeterminado"));
+    $empresa=$this->empresa_model->mostrar();
+    if ($tipo=='N') {
+      $datos=$this->cobro_model->mostrar($id);
+      $ventas=$this->nventa_model->mostrar($datos->idnventa);
+      $cobros=$this->cobro_model->montoTotal(array("nulo"=>0,"idnventa"=>$datos->idnventa));
+    } else {
+      $datos=$this->cobroe_model->mostrar($id);
+      $ventas=$this->venta_model->mostrar($datos->idventa);
+      $cobros=$this->cobroe_model->montoTotal(array("nulo"=>0,"idventa"=>$datos->idventa));
+    }
+    $this->layout->setLayout("blanco");
+    $this->layout->view("pdf80",compact("empresa","nestablecimiento","datos","ventas","cobros"));
+  }
+
+  public function pdf58($tipo,$id)
+  {
+    $nestablecimiento=$this->establecimiento_model->mostrar($this->session->userdata("predeterminado"));
+    $empresa=$this->empresa_model->mostrar();
+    if ($tipo=='N') {
+      $datos=$this->cobro_model->mostrar($id);
+      $ventas=$this->nventa_model->mostrar($datos->idnventa);
+      $cobros=$this->cobro_model->montoTotal(array("nulo"=>0,"idnventa"=>$datos->idnventa));
+    } else {
+      $datos=$this->cobroe_model->mostrar($id);
+      $ventas=$this->venta_model->mostrar($datos->idventa);
+      $cobros=$this->cobroe_model->montoTotal(array("nulo"=>0,"idventa"=>$datos->idventa));
+    }
+    $this->layout->setLayout("blanco");
+    $this->layout->view("pdf58",compact("empresa","nestablecimiento","datos","ventas","cobros"));
+  }
+
+  public function pdfa5($tipo,$id)
+  {
+    $nestablecimiento=$this->establecimiento_model->mostrar($this->session->userdata("predeterminado"));
+    $empresa=$this->empresa_model->mostrar();
+    if ($tipo=='N') {
+      $datos=$this->cobro_model->mostrar($id);
+      $ventas=$this->nventa_model->mostrar($datos->idnventa);
+      $cobros=$this->cobro_model->montoTotal(array("nulo"=>0,"idnventa"=>$datos->idnventa));
+    } else {
+      $datos=$this->cobroe_model->mostrar($id);
+      $ventas=$this->venta_model->mostrar($datos->idventa);
+      $cobros=$this->cobroe_model->montoTotal(array("nulo"=>0,"idventa"=>$datos->idventa));
+    }
+    $this->layout->setLayout("blanco");
+    $this->layout->view("pdfa5",compact("empresa","nestablecimiento","datos","ventas","cobros"));
+  }
+
+  public function cobrari($id)
+  {
+    $controlip=$this->controlip('cobrar/cobrari');
+    $anexos=explode(",",$this->session->userdata("establecimientos"));
+    $nestablecimiento=$this->establecimiento_model->mostrar($this->session->userdata("predeterminado"));
+    $empresa=$this->empresa_model->mostrar();
+
+    $ventas=$this->nventa_model->mostrar($id);
+    if ($this->input->post())
+    {
+      $url='';
+      if ($this->input->post('importe',true)>$this->input->post('saldo',true)) {
+        $mensaje='El monto es mucho mayor al que tiene que cobrar';
+      } else {
+        $data=array
+        (
+          'idestablecimiento' =>$this->session->userdata("predeterminado"),
+          'iduser'            =>$this->session->userdata('id'),
+          'idnventa'          =>$id,
+          'femision'          =>date("Y-m-d"),
+          'total'             =>$this->input->post('importe',true),
+          'idtpago'           =>$this->input->post('mpago',true),
+          "documento"         =>$this->input->post("documento",true),
+        );
+        $insertar=$this->cobro_model->insert($data);
+
+        $cobros=$this->cobro_model->montoTotal(array("nulo"=>0,"idnventa"=>$id));
+        $saldo=$ventas->total-$cobros->total;
+        if ($saldo==0) {
+          $datac=array
+          (
+            'cancelado' =>1,
+            'fpago'   =>NULL,
+          );
+        } else {
+          $suma=tiempoCuota($this->input->post('pcuota',true));
+          $posterior=SumarFecha($suma,$this->input->post('fpago',true));
+          $datac=array('fpago'=>$posterior);
+        }
+        $actualizar=$this->nventa_model->update($datac,array("id"=>$id));
+
+        $datap=array
+        (
+          'pago'              =>$cobros->total,
+          'saldo'             =>$saldo,
+        );
+        $actualizap=$this->cobro_model->update($datap,array("id"=>$insertar));
+
+        $this->session->set_flashdata("css", "success");
+        $this->session->set_flashdata("mensaje", "Los datos se han guardado exitosamente!");
+
+        $control_movimiento=$this->movimientos('cobrar/cobrari','Registro cobro de documento '.$ventas->serie.'-'.$ventas->numero);
+        $url=base_url().'cobros';
+        $mensaje='Los datos se han guardado exitosamente!';
+      }
+
+      $datos['mensaje']=$mensaje;
+      $datos['url']=$url;
+      echo json_encode($datos);
+      exit();
+    }
+
+    $pagos=$this->cobro_model->mostrarTotal(array("p.nulo"=>0,"p.idnventa"=>$id));
+    $mpagos=$this->tpago_model->mostrarTotal();
+    $this->layout->setTitle("Cuenta por cobrar");
+    $this->layout->view("cobrari",compact("anexos","nestablecimiento",'empresa',"ventas","pagos","mpagos"));
+  }
+
+  public function cobrarci($id)
+  {
+    $controlip=$this->controlip('cobrar/cobrarci');
+    $anexos=explode(",",$this->session->userdata("establecimientos"));
+    $nestablecimiento=$this->establecimiento_model->mostrar($this->session->userdata("predeterminado"));
+    $empresa=$this->empresa_model->mostrar();
+
+    $ventas=$this->venta_model->mostrar($id);
+    if ($this->input->post())
+    {
+      $url='';
+      if ($this->input->post('importe',true)>$this->input->post('saldo',true)) {
+        $mensaje='El monto es mucho mayor al que tiene que cobrar';
+      } else {
+        $data=array
+        (
+          'idestablecimiento' =>$this->session->userdata("predeterminado"),
+          'iduser'            =>$this->session->userdata('id'),
+          'idventa'           =>$id,
+          'femision'          =>date("Y-m-d"),
+          'total'             =>$this->input->post('importe',true),
+          'idtpago'           =>$this->input->post('mpago',true),
+          "documento"         =>$this->input->post("documento",true),
+        );
+        $insertar=$this->cobroe_model->insert($data);
+
+        $cobros=$this->cobroe_model->montoTotal(array("nulo"=>0,"idventa"=>$id));
+        $saldo=$ventas->total-$cobros->total;
+        if ($saldo==0) {
+          $datac=array
+          (
+            'cancelado' =>1,
+            'fpago'   =>NULL,
+          );
+        } else {
+          $suma=tiempoCuota($this->input->post('pcuota',true));
+          $posterior=SumarFecha($suma,$this->input->post('fpago',true));
+          $datac=array('fpago'=>$posterior);
+        }
+        $actualizar=$this->venta_model->update($datac,$id);
+
+        $datap=array
+        (
+          'pago'              =>$cobros->total,
+          'saldo'             =>$saldo,
+        );
+        $actualizap=$this->cobroe_model->update($datap,array("id"=>$insertar));
+
+        $this->session->set_flashdata("css", "success");
+        $this->session->set_flashdata("mensaje", "Los datos se han guardado exitosamente!");
+
+        $control_movimiento=$this->movimientos('cobrar/cobrarci','Registro cobro de documento '.$ventas->serie.'-'.$ventas->numero);
+        $url=base_url().'cobros';
+        $mensaje='Los datos se han guardado exitosamente!';
+      }
+
+      $datos['mensaje']=$mensaje;
+      $datos['url']=$url;
+      echo json_encode($datos);
+      exit();
+    }
+
+    $pagos=$this->cobroe_model->mostrarTotal(array("p.nulo"=>0,"p.idventa"=>$id));
+    $mpagos=$this->tpago_model->mostrarTotal();
+    $this->layout->setTitle("Cuenta por cobrar");
+    $this->layout->view("cobrari",compact("anexos","nestablecimiento",'empresa',"ventas","pagos","mpagos"));
+  }
+
+  public function excelcobrar()
+  {
+    $filtros=array("idestablecimiento"=>$this->session->userdata("predeterminado"),"nulo"=>0,"cancelado"=>0);
+    if ($this->session->userdata("tipo")!='admin') {$filtros['iduser']=$this->session->userdata("id");}
+    $listas=$this->nventa_model->mostrarTotal($filtros,"desc");
+    $listac=$this->venta_model->mostrarTotal($filtros,"desc");
+
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle("ingreso");
+
+    $styleArray = [
+        'borders' => [
+            'top' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+            'bottom' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+            'left' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+            'right' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+            ],
+        ],
+    ];
+
+    foreach(range("A","G") as $columnID) {
+        $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        $sheet->getStyle($columnID."1")->applyFromArray($styleArray);
+    }
+
+    $sheet->setCellValueByColumnAndRow(1, 1,"Id");
+    $sheet->setCellValueByColumnAndRow(2, 1,"Fecha");
+    $sheet->setCellValueByColumnAndRow(3, 1,"Comprobante");
+    $sheet->setCellValueByColumnAndRow(4, 1,"Cliente");
+    $sheet->setCellValueByColumnAndRow(5, 1,"Importe");
+    $sheet->setCellValueByColumnAndRow(6, 1,"Cobrado");
+    $sheet->setCellValueByColumnAndRow(7, 1,"Saldo");
+
+    $i=2; $j=1;
+    foreach ($listas as $lista) {
+      foreach(range("A","G") as $columnID) {
+        $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        $sheet->getStyle($columnID.$i)->applyFromArray($styleArray);
+      }
+      $pagado=$this->cobro_model->montoTotal(array("idnventa"=>$lista->id));
+
+      $sheet->setCellValue("A".$i,$j);
+      $sheet->setCellValue("B".$i,$lista->femision);
+      $sheet->setCellValue("C".$i,$lista->serie.'-'.$lista->numero);
+      $sheet->setCellValue("D".$i,$lista->cliente);
+      $sheet->setCellValue("E".$i,$lista->total);
+      $sheet->setCellValue("F".$i,$pagado->total);
+      $sheet->setCellValue("G".$i,$lista->total-$pagado->total);
+      $i++; $j++;
+    }
+
+    foreach ($listac as $lista) {
+      foreach(range("A","G") as $columnID) {
+        $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        $sheet->getStyle($columnID.$i)->applyFromArray($styleArray);
+      }
+      $pagado=$this->cobroe_model->montoTotal(array("idventa"=>$lista->id));
+
+      $sheet->setCellValue("A".$i,$j);
+      $sheet->setCellValue("B".$i,$lista->femision);
+      $sheet->setCellValue("C".$i,$lista->serie.'-'.$lista->numero);
+      $sheet->setCellValue("D".$i,$lista->cliente);
+      $sheet->setCellValue("E".$i,$lista->total);
+      $sheet->setCellValue("F".$i,$pagado->total);
+      $sheet->setCellValue("G".$i,$lista->total-$pagado->total);
+      $i++; $j++;
+    }
+
+    $writer = new Xlsx($spreadsheet); // instantiate Xlsx
+    header('Content-Type: application/vnd.ms-excel'); // generate excel file
+    header('Content-Disposition: attachment;filename="LISTA_COBRAR.xlsx"');
+    $writer->save('php://output');  // download file
+  }
+
+  public function movimientos($pagina,$descripcion)
+  {
+    $tiempo = date('Y-m-d H:i:s',time());
+    $data=array
+    (
+      'user'        =>$this->session->userdata('user'),
+      'descripcion' =>$descripcion,
+      'tiempo'      =>$tiempo,
+      'pagina'      =>$pagina,
+    );
+    $insertar=$this->controlm_model->insertar($data);
+  }
+
+  public function controlip($pagina)
+  {
+    $nomcpu=gethostbyaddr($_SERVER["REMOTE_ADDR"]);
+    $ip = $_SERVER["REMOTE_ADDR"];
+      $info=$this->detectar();
+      $tiempo = date('Y-m-d H:i:s',time());
+      $limite = time()-5*60;  //borrando los registros de las ip inactivas (5 minutos)
+
+    $borrar=$this->controlip_model->delete($limite);
+    $consulta=$this->controlip_model->contador($this->session->userdata('user'));
+
+    if ($consulta==0) {
+      $data=array
+      (
+        'ip'  =>$ip,
+        'fecha' =>time(),
+        'tiempo'=>$tiempo,
+        'nombre'=>$nomcpu,
+        'soperativo'=>$info["os"],
+        'navegador'=>$info["browser"],
+        'dispositivo'=>$info["device"],
+        'pagina'=>$pagina,
+        'user'  =>$this->session->userdata('user'),
+      );
+      $insertar=$this->controlip_model->insertar($data);
+    }else{
+      $data=array
+      (
+        'ip'  =>$ip,
+        'fecha' =>time(),
+        'tiempo'=>$tiempo,
+        'nombre'=>$nomcpu,
+        'soperativo'=>$info["os"],
+        'navegador'=>$info["browser"],
+        'dispositivo'=>$info["device"],
+        'pagina'=>$pagina,
+      );
+      $guardar=$this->controlip_model->update($data,$this->session->userdata('user'));
+    }
+  }
+
+  function detectar()
+  {
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    # definimos unos valores por defecto para el navegador y el sistema operativo
+    $info['browser'] = "Otros";
+    $info['os'] = "Otros";
+    $info['device'] = "Otros";
+
+    # buscamos el navegador con su sistema operativo
+    if(strpos($user_agent, 'MSIE') !== FALSE)
+       $parent='Internet explorer';
+    elseif(strpos($user_agent, 'Edge') !== FALSE) //Microsoft Edge
+       $parent='Microsoft Edge';
+    elseif(strpos($user_agent, 'Trident') !== FALSE) //IE 11
+        $parent='Internet explorer';
+    elseif(strpos($user_agent, 'Opera Mini') !== FALSE)
+       $parent="Opera Mini";
+    elseif(strpos($user_agent, 'Opera') || strpos($user_agent, 'OPR') !== FALSE)
+       $parent="Opera";
+    elseif(strpos($user_agent, 'Firefox') !== FALSE)
+       $parent='Mozilla Firefox';
+    elseif(strpos($user_agent, 'Chrome') !== FALSE)
+       $parent='Google Chrome';
+    elseif(strpos($user_agent, 'Safari') !== FALSE)
+       $parent="Safari";
+    else
+       $parent='No hemos podido detectar su navegador';
+    $info['browser'] = $parent;
+
+    # obtenemos el sistema operativo
+    $plataformas = array(
+      'Windows 10' => 'Windows NT 10.0+',
+      'Windows 8.1' => 'Windows NT 6.3+',
+      'Windows 8' => 'Windows NT 6.2+',
+      'Windows 7' => 'Windows NT 6.1+',
+      'Windows Vista' => 'Windows NT 6.0+',
+      'Windows XP' => 'Windows NT 5.1+',
+      'Windows 2003' => 'Windows NT 5.2+',
+      'Windows' => 'Windows otros',
+      'iPhone' => 'iPhone',
+      'iPad' => 'iPad',
+      'Mac OS X' => '(Mac OS X+)|(CFNetwork+)',
+      'Mac otros' => 'Macintosh',
+      'Android' => 'Android',
+      'BlackBerry' => 'BlackBerry',
+      'Linux' => 'Linux',
+     );
+     foreach($plataformas as $plataforma=>$pattern){
+        if (preg_match('/(?i)'.$pattern.'/', $user_agent))
+           $info['os'] = $plataforma;
+     }
+
+     if(preg_match("/(android|avantgo|blackberry|bolt|boost|cricket|docomo|fone|hiptop|mini|mobi|palm|phone|pie|tablet|up\.browser|up\.link|webos|wos)/i",$user_agent)){
+      $info['device'] = 'Mobile';
+     }
+     else {
+      $info['device'] = 'Desktop';
+     }
+
+    # devolvemos el array de valores
+    return $info;
+  }
+
+  public function acciones($numero)
+  {
+    $accesos=$this->anusuario_model->mostrar(array("idacceson"=>$numero,"iduser"=>$this->session->userdata('id')));
+    $activoc=$accesos!=NULL??0;
+    // $activoi=$accesos!=NULL? $accesos->insertar: 0;
+    // $activoe=$accesos!=NULL? $accesos->editar: 0;
+
+    // $datos['insertar']=$activoi;
+    // $datos['editar']=$activoe;
+    return $activoc;
+  }
+
+
+}

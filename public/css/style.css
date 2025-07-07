@@ -1,0 +1,174 @@
+/*creaciones mias para mejorar*/
+.content-wrapper {
+    background-image: url(../img/fondo.png);
+}
+
+.login-page {
+    background-image: url(../img/inicio.png);
+    background-repeat: no-repeat;
+  background-position: bottom right;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+input[data-readonly] {
+  pointer-events: none;
+  background-color: transparent;
+}
+
+textarea {
+    font-size: .76rem;
+}
+
+.campo {
+    border-top-style: none;
+    border-right-style: none;
+    border-bottom-style: none;
+    border-left-style: none;
+    background-color: transparent;
+    font-weight: bolder;
+    pointer-events: none;
+    width: 100%;
+}
+
+textarea.campo {
+    overflow: hidden; /* Evita barras de desplazamiento */
+    resize: none; /* Evita el redimensionamiento manual */
+}
+
+.bg-buscador{
+  background-color: #d2f7f7 !important;
+  font-size: 0.78rem;
+}
+
+.bg-buscador a:focus {
+  background: #95e6e6 !important;
+  color: #353c3c;
+}
+
+.panel-sidebar{
+  padding: 5px;
+  display: block;
+}
+
+.panel-sidebar.active{
+  background-color: #6f8888
+}
+
+.form-control:focus {
+    border:2px solid #17a2b8;
+}
+
+.btn {
+    border-radius: 0.6rem;
+}
+
+.table-responsive {
+  max-height: 550px;
+  overflow-y: auto;
+}
+
+.table-responsive thead {
+  position: sticky;
+  top: 0;
+  color: #fff;
+  z-index: 1;
+}
+
+@media screen and (max-width: 565px) {
+  .priority{
+    display:none;
+  }
+
+}
+
+.badge-precio
+{
+    position: absolute;
+    top: 5%;
+    right: -20%;
+    background-color: #FF5733;
+    color: #FFFFFF;
+    border-radius: 5px;
+    padding: 1px 6px;
+    font-size: 0.65rem;
+    transform: translateY(-65%);
+}
+
+.migaja {
+    font-size: 1.2rem;
+}
+
+.highlight {
+    background-color: #b2c5f1ba;
+    outline: 2px solid #658cfbe8;
+}
+
+/*              modificacion miguel            */
+.login-card-body, .register-card-body {
+    background-color: rgba(0, 20, 81, 1.0);
+    border-top: 5; 
+    color: #fff; 
+    padding: 20px; 
+    box-shadow: 0 0 30px #3C69FC;
+    border-radius: 15px;
+}
+[class*=sidebar-dark-] {
+    background-color: #00134E;
+}
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active, .sidebar-light-primary .nav-sidebar>.nav-item>.nav-link.active {
+    background-color: #0000FF;
+    box-shadow: 0 0 20px #3C69FC;
+    color: #fff;
+}
+
+[class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:focus, [class*=sidebar-dark-] .nav-treeview>.nav-item>.nav-link.active:hover {
+    background-color: rgba(255,255,255,.9);
+    color: #343a40;
+    box-shadow: 0 0 30px #3C69FC;
+}
+[class*=sidebar-dark-] .sidebar a {
+    color: #CCCCFF;
+}
+.form-control {
+    border: 2px solid #CCCCFF;
+    border-radius: 0.7rem;
+    box-shadow: 0 0 10px #CCCCFF;
+}
+
+.card {
+    box-shadow: 0 0 20px #82ACD4;
+}
+
+body {
+    color:#000078;
+}
+
+label:not(.form-check-label):not(.custom-file-label) {
+    font-weight: 400;
+}
+
+.pl-1, .px-1 {
+    padding-left: 0.25rem!important;
+    font-weight: 600;
+}
+
+.text-sm .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+a {
+    color: #0462d1;
+}
+
+/* CSS para ocultar los botones de subir y bajar en diferentes navegadores */
+input[type="number"].no-spinners {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+input[type="number"].no-spinners::-webkit-inner-spin-button,
+input[type="number"].no-spinners::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0; /* Chrome, Safari, Edge, Opera */
+}
