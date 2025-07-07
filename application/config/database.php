@@ -75,10 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'bdboticas',
+	'hostname' => 'mysql-mybotica.alwaysdata.net',
+	'username' => 'mybotica',
+	'password' => 'Gerardito@1',
+	'database' => 'mybotica_bdboticas',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
