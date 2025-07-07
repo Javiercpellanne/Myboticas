@@ -1,18 +1,21 @@
 FROM php:8.1-apache
 
-# Instala extensiones necesarias para MySQL
+# Instala extensiones necesarias
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Habilita mod_rewrite de Apache
-RUN a2enmod rewrite
-
-# Copia todos los archivos al servidor
+# Copia el contenido de tu proyecto
 COPY . /var/www/html/
 
-# Establece la carpeta "public" como raíz del sitio
-WORKDIR /var/www/html/public
-
-# Corrige permisos si es necesario
+# Da permisos
 RUN chown -R www-data:www-data /var/www/html
+
+# Habilita Apache rewrite module (CodeIgniter lo usa)
+RUN a2enmod rewrite
+
+# Configura Apache para usar index.php
+RUN echo '<Directory /var/www/html/>\n\
+    AllowOverride All\n\
+</Directory>' > /etc/apache2/conf-available/override.conf \
+    && a2enconf override
 
 EXPOSE 80
