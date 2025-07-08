@@ -11,3 +11,5 @@ RUN a2enmod rewrite
 
 # Configura Apache
 COPY .htaccess /var/www/html/.htaccess
+
+RUN mkdir -p /var/www/html/application/logs && chmod -R 777 /var/www/html/application/logs

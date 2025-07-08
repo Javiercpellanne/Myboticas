@@ -1,4 +1,9 @@
 <?php
+
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+
 /**
  * CodeIgniter
  *
@@ -66,9 +71,9 @@
 switch (ENVIRONMENT)
 {
 	case 'development':
-    error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED & ~E_NOTICE & ~E_WARNING);
-    ini_set('display_errors', 0);
-    break;
+    error_reporting(-1);
+	ini_set('display_errors', 1);
+	break;
 
 
 	case 'testing':
@@ -313,4 +318,5 @@ switch (ENVIRONMENT)
  *
  * And away we go...
  */
+echo "ANTES DE CARGAR CI"; // Línea de prueba
 require_once BASEPATH.'core/CodeIgniter.php';
